@@ -1,0 +1,19 @@
+.careers-intro {
+  max-width: 560px;
+  margin-bottom: 30px;
+}
+
+.careers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.careers-card h3 {
+  color: var(--accent-2);
+}
+
+.careers-card p {
+  margin: 0;
+  font-size: 14px;
+}

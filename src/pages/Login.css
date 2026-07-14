@@ -1,0 +1,23 @@
+.login-container {
+  display: flex;
+  justify-content: center;
+}
+
+.login-card {
+  max-width: 380px;
+  width: 100%;
+  text-align: center;
+  padding: 40px 32px;
+}
+
+.login-ms-btn {
+  width: 100%;
+  margin-top: 8px;
+}
+
+.login-error {
+  color: var(--accent-2);
+  font-size: 13px;
+  margin-top: 12px;
+  margin-bottom: 0;
+}

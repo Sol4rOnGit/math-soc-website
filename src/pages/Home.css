@@ -1,0 +1,52 @@
+.home-hero {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 50px;
+}
+
+.home-hero h1 {
+  font-size: 42px;
+  margin: 14px 0 6px;
+}
+
+.home-motto {
+  color: var(--accent-2);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+}
+
+.home-tile {
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.home-tile:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-2);
+}
+
+.home-tile h3 {
+  color: var(--accent-2);
+  margin-bottom: 8px;
+}
+
+.home-tile p {
+  margin: 0;
+  font-size: 14px;
+}
+
+@media (max-width: 500px) {
+  .home-hero h1 {
+    font-size: 32px;
+  }
+}

@@ -1,0 +1,36 @@
+.leaderboard-table {
+  max-width: 560px;
+  padding: 8px;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 50px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.leaderboard-row:last-child {
+  border-bottom: none;
+}
+
+.leaderboard-rank {
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.leaderboard-row.is-top .leaderboard-rank {
+  color: var(--accent-2);
+}
+
+.leaderboard-name {
+  font-weight: 600;
+}
+
+.leaderboard-points {
+  color: var(--accent-2);
+  font-weight: 700;
+  font-size: 14px;
+}

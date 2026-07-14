@@ -1,0 +1,42 @@
+.challenge-upload,
+.challenge-question,
+.challenge-submit,
+.challenge-result,
+.challenge-workings {
+  max-width: 600px;
+  margin: 0 0 20px;
+}
+
+.challenge-upload h3,
+.challenge-question h3,
+.challenge-submit h3,
+.challenge-workings h3 {
+  margin-bottom: 16px;
+}
+
+.challenge-question img,
+.challenge-workings img {
+  width: 100%;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.challenge-result {
+  border-color: var(--accent-2);
+}
+
+.challenge-result.is-correct h3 {
+  color: var(--accent-2);
+}
+
+.challenge-result.is-incorrect h3 {
+  color: var(--accent-1);
+}
+
+.challenge-result p {
+  margin: 0;
+}
+
+.challenge-result strong {
+  color: var(--text);
+}
