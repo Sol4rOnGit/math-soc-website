@@ -1,36 +1,45 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { addDoc, collection, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
-import { initialNewsletters } from '../data/mockData';
+import { db } from '../scripts/firebase';
 import './Newsletter.css';
 
 export default function Newsletter() {
   const { isTeacher } = useAuth();
-  const [newsletters, setNewsletters] = useState(initialNewsletters);
+  const [newsletters, setNewsletters] = useState([]);
   const [title, setTitle] = useState('');
-  const [file, setFile] = useState(null);
+  const [fileUrl, setFileUrl] = useState('');
+  const [publishing, setPublishing] = useState(false);
 
-  const handlePublish = (e) => {
+  useEffect(() => {
+    const q = query(collection(db, 'newsletters'), orderBy('createdAt', 'desc'));
+    const unsubscribe = onSnapshot(q, (snap) => {
+      setNewsletters(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    })
+    return unsubscribe;
+  }, []);
+
+  const handlePublish = async (e) => {
     e.preventDefault();
-    if (!title || !file) return;
+    if (!title || !fileUrl) return;
 
-    // TODO: replace with a real Firebase Storage upload, e.g.
-    // const storageRef = ref(storage, `newsletters/${file.name}`);
-    // await uploadBytes(storageRef, file);
-    // const fileUrl = await getDownloadURL(storageRef);
-    // then write { title, date, fileUrl } to a `newsletters` Firestore collection.
-    const fileUrl = URL.createObjectURL(file);
+    setPublishing(true);
+    try{
+      await addDoc(collection(db, 'newsletters'), {
+        title,
+        date: new Date().toISOString().slice(0, 10),
+        fileUrl,
+        createdAt: serverTimestamp(),
+      });
 
-    const newEntry = {
-      id: crypto.randomUUID(),
-      title,
-      date: new Date().toISOString().slice(0, 10),
-      fileUrl,
-    };
-
-    setNewsletters([newEntry, ...newsletters]);
-    setTitle('');
-    setFile(null);
-    e.target.reset();
+      setTitle('');
+      setFileUrl('');
+      e.target.reset();
+    } catch (error){
+      alert(error.message || 'Could not publish this newsletter.');
+    } finally {
+      setPublishing(false);
+    }
   };
 
   return (
@@ -55,22 +64,26 @@ export default function Newsletter() {
               />
             </div>
             <div className="form-field">
-              <label htmlFor="nl-file">PDF file</label>
+              <label htmlFor="nl-link">OneDrive link to the PDF</label>
               <input
-                id="nl-file"
-                type="file"
-                accept="application/pdf"
-                onChange={(e) => setFile(e.target.files[0] ?? null)}
+                id="nl-link"
+                type="url"
+                value={fileUrl}
+                onChange={(e) => setFileUrl(e.target.value)}
+                placeholder='Upload the PDF to OneDrive, then paste share link here with &download=1 at the end'
                 required
               />
             </div>
-            <button type="submit" className="btn btn-primary">
-              Publish
+            <button type="submit" className="btn btn-primary" disabled={publishing}>
+              {publishing ? 'Publishing\u2026' : 'Publish'}
             </button>
           </form>
         )}
 
         <div className="newsletter-list">
+          {newsletters.length === 0 && (
+            <p>No newsletters published yet.</p>
+          )}
           {newsletters.map((n) => (
             <a
               key={n.id}

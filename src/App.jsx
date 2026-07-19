@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ProtectedRoute from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -17,7 +18,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/newsletter" element={<Newsletter />} />
-          <Route path="/challenge" element={<Challenge />} />
+          <Route path="/challenge" element={<ProtectedRoute><Challenge /></ProtectedRoute>} /> 
           <Route path="/careers" element={<Careers />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
         </Routes>

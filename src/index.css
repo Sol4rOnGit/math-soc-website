@@ -134,7 +134,8 @@ button {
 }
 
 .form-field input[type="text"],
-.form-field input[type="file"] {
+.form-field input[type="file"],
+.form-field input[type="url"] {
   background: var(--surface-alt);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -142,6 +143,7 @@ button {
   color: var(--text);
   font-family: inherit;
   font-size: 14px;
+  width: 100%;
 }
 
 .form-field input:focus {

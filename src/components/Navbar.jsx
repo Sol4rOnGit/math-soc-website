@@ -14,7 +14,7 @@ const links = [
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const { currentUser, role, setRole, logout } = useAuth();
+  const { currentUser, role, setRole, isRealTeacher, logout } = useAuth();
 
   const closeMenu = () => setOpen(false);
 
@@ -39,13 +39,13 @@ export default function Navbar() {
           ))}
 
           <div className="navbar-mobile-auth">
-            <RoleSwitcher role={role} setRole={setRole} />
+            {isRealTeacher && <RoleSwitcher role={role} setRole={setRole} />}
             <AuthButton currentUser={currentUser} logout={logout} closeMenu={closeMenu} />
           </div>
         </nav>
 
         <div className="navbar-actions">
-          <RoleSwitcher role={role} setRole={setRole} />
+          {isRealTeacher && <RoleSwitcher role={role} setRole={setRole} />}
           <AuthButton currentUser={currentUser} logout={logout} closeMenu={closeMenu} />
         </div>
 

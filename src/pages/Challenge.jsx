@@ -1,64 +1,155 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { addDoc, collection, doc, getDoc, increment, onSnapshot, orderBy, query, limit, serverTimestamp, writeBatch} from 'firebase/firestore';
 import { useAuth } from '../context/AuthContext';
-import { initialChallenge } from '../data/mockData';
+import { db } from '../scripts/firebase';
 import './Challenge.css';
 
+async function uploadToImgbb(file) {
+  const apiKey = import.meta.env.VITE_IMGBB_API_KEY;
+  if (!apiKey) {
+    throw new Error('Missing VITE_IMGBB_API_KEY - add it to your .env file.');
+  }
+
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const res = await fetch(`https://api.imgbb.com/1/upload?key=${apiKey}`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  const data = await res.json();
+
+  if (!res.ok || !data.success) {
+    throw new Error(data?.error?.message || 'Image upload failed.');
+  }
+
+  return data.data.url;
+}
+
 export default function Challenge() {
-  const { isTeacher } = useAuth();
-  const [challenge, setChallenge] = useState(initialChallenge);
+  const { currentUser, isTeacher } = useAuth();
+  const [challenge, setChallenge] = useState(null);
 
   const [studentAnswer, setStudentAnswer] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
+  const [existingSubmission, setExistingSubmission] = useState(null);
+  const [checkingSubmission, setCheckingSubmission] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   const [weekLabel, setWeekLabel] = useState('');
   const [questionFile, setQuestionFile] = useState(null);
   const [workingsFile, setWorkingsFile] = useState(null);
   const [answer, setAnswer] = useState('');
+  const [publishing, setPublishing] = useState(false);
 
-  const handleSubmitAnswer = (e) => {
+  useEffect (() => {
+    const q = query(collection(db, 'challenges'), orderBy('createdAt', 'desc'), limit(1));
+    const unsubscribe = onSnapshot(q, (snap) => {
+      setChallenge(snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() })
+    });
+    return unsubscribe;
+  }, []); 
+
+  useEffect (() => {
+    let cancelled = false;
+
+    async function checkSubmission(){
+      setCheckingSubmission(true);
+
+      if (!challenge || !currentUser){
+        if (!cancelled){
+          setExistingSubmission(null);
+          setCheckingSubmission(false);
+        }
+        return;
+      }
+
+      const subRef = doc(db, 'submissions', `${currentUser.uid}_${challenge.id}`);
+      const snap = await getDoc(subRef);
+      if (!cancelled){
+        setExistingSubmission(snap.exists() ? snap.data() : null);
+        setCheckingSubmission(false);
+      }
+    }
+
+    checkSubmission();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [challenge, currentUser]);
+
+  const handleSubmitAnswer = async (e) => {
     e.preventDefault();
-    if (!studentAnswer) return;
+    if (!studentAnswer || !challenge || !currentUser) return;
 
-    const correct =
-      studentAnswer.trim().toLowerCase() === challenge.answer.trim().toLowerCase();
+    setSubmitting(true);
+    try{
+      const correct = studentAnswer.trim().toLowerCase() === challenge.answer.trim().toLowerCase();
 
-    // TODO: write the submission to Firestore, e.g. a `submissions` collection
-    // keyed by challenge id + user id, then award leaderboard points server-side.
-    setIsCorrect(correct);
-    setSubmitted(true);
+      const batch = writeBatch(db);
+      const subRef = doc(db, 'submissions', `${currentUser.uid}_${challenge.id}`);
+      batch.set(subRef, {
+        uid: currentUser.uid,
+        challengeId: challenge.id,
+        answer: studentAnswer,
+        correct,
+        createdAt: serverTimestamp(),
+      });
+
+      if (correct){
+        const userRef = doc(db, 'users', currentUser.uid);
+        batch.update(userRef, {points: increment(10)});
+      }
+
+      await batch.commit();
+      setExistingSubmission({answer: studentAnswer, correct});
+    } catch (error) {
+      alert(error.message || 'Could not submit your answer.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
-  const handlePublishChallenge = (e) => {
+  const handlePublishChallenge = async (e) => {
     e.preventDefault();
     if (!questionFile || !workingsFile || !answer || !weekLabel) return;
 
-    // TODO: replace with real Firebase Storage uploads for both images, then
-    // write { weekLabel, questionImage, workingsImage, answer } to Firestore.
-    const newChallenge = {
-      id: crypto.randomUUID(),
-      weekLabel,
-      questionImage: URL.createObjectURL(questionFile),
-      workingsImage: URL.createObjectURL(workingsFile),
-      answer,
-    };
+    setPublishing(true);
+    try {
+      const [questionImage, workingsImage] = await Promise.all([
+        uploadToImgbb(questionFile),
+        uploadToImgbb(workingsFile),
+      ]);
 
-    setChallenge(newChallenge);
-    setWeekLabel('');
-    setQuestionFile(null);
-    setWorkingsFile(null);
-    setAnswer('');
-    setSubmitted(false);
-    setStudentAnswer('');
-    e.target.reset();
+      await addDoc(collection(db, 'challenges'), {
+        weekLabel,
+        questionImage,
+        workingsImage,
+        answer,
+        createdAt: serverTimestamp(),
+      });
+
+      setWeekLabel('');
+      setQuestionFile(null);
+      setWorkingsFile(null);
+      setAnswer('');
+      e.target.reset();
+    } catch (error){
+      alert(error.message || 'Could not publish the challenge.');
+    } finally {
+      setPublishing(false);
+    }
   };
+
+  const revealed = isTeacher || (!checkingSubmission && !!existingSubmission);
 
   return (
     <div className="page challenge-page">
       <div className="container">
         <div className="section-title">
           <h1>Challenge of the Week</h1>
-          <span className="tag">{challenge.weekLabel}</span>
+          {challenge && <span className="tag">{challenge.weekLabel}</span>}
         </div>
 
         {isTeacher && (
@@ -106,18 +197,24 @@ export default function Challenge() {
                 required
               />
             </div>
-            <button type="submit" className="btn btn-primary">
-              Publish challenge
+            <button type="submit" className="btn btn-primary" disabled={publishing}>
+              {publishing ? 'Publishing\u2026' : 'Publish challenge'}
             </button>
           </form>
         )}
 
+        {!challenge && (
+          <p>No challenge of the week has been published yet.</p>
+        )}
+
+        {challenge && (
         <div className="card challenge-question">
           <h3>Question</h3>
           <img src={challenge.questionImage} alt="This week's challenge question" />
         </div>
+        )}
 
-        {!isTeacher && (
+        {!isTeacher && !checkingSubmission && !existingSubmission && (
           <form className="card challenge-submit" onSubmit={handleSubmitAnswer}>
             <h3>Submit your answer</h3>
             <div className="form-field">
@@ -131,20 +228,20 @@ export default function Challenge() {
                 required
               />
             </div>
-            <button type="submit" className="btn btn-primary">
-              Submit
+            <button type="submit" className="btn btn-primary" disabled={submitting}>
+              {submitting ? 'Submitting\u2026' : 'Submit'}
             </button>
           </form>
         )}
 
-        {submitted && !isTeacher && (
-          <div className={`card challenge-result ${isCorrect ? 'is-correct' : 'is-incorrect'}`}>
-            <h3>{isCorrect ? 'Correct! \u{1F389}' : 'Not quite'}</h3>
+        {challenge && existingSubmission && !isTeacher && (
+          <div className={`card challenge-result ${existingSubmission.correct ? 'is-correct' : 'is-incorrect'}`}>
+            <h3>{existingSubmission.correct ? 'Correct! \u{1F389}' : 'Not quite!'}</h3>
             <p>The correct answer was: <strong>{challenge.answer}</strong></p>
           </div>
         )}
 
-        {(submitted || isTeacher) && (
+        {challenge && revealed && (
           <div className="card challenge-workings">
             <h3>Workings & solution</h3>
             <img src={challenge.workingsImage} alt="Workings and solution" />

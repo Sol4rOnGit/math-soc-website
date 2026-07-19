@@ -1,4 +1,3 @@
-.challenge-upload,
 .challenge-question,
 .challenge-submit,
 .challenge-result,
@@ -7,11 +6,16 @@
   margin: 0 0 20px;
 }
 
-.challenge-upload h3,
+
 .challenge-question h3,
 .challenge-submit h3,
 .challenge-workings h3 {
   margin-bottom: 16px;
+}
+
+.challenge-upload{
+  max-width: 100%;
+  margin: 0 0 20px;
 }
 
 .challenge-question img,

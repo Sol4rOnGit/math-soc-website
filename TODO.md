@@ -15,8 +15,10 @@
 
 ## Backend
 
-- [ ] Connect Firebase
-- [ ] Set up Firebase security
-- [ ] Firebase Authentication
-- [ ] Teacher/Student checks to integrate
-- [ ] Accounts to initialise with isTeacher set to false.
+- [x] Connect Firebase
+- [x] Set up Firebase security
+- [x] Firebase Authentication
+- [x] Teacher/Student checks to integrate
+- [x] Accounts to initialise with isTeacher set to false.
+- [ ] Leaderboard
+- [ ] 3 tiered CoTW integration
