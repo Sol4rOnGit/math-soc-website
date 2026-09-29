@@ -16,7 +16,7 @@ Built with the main objective of keeping it 100% free, easy to maintain and easi
 
 This Project is Maintained by Year 12/13 students and to be handed down anually, generally Computer Science head(s).
 
-Created by Hiresh Solanki, Aryan Jha [Email 20solankih@uptoncourtgrammar.org.uk for legacy support/general help!]
+Created by Hiresh Solanki, Aryan Jha [Email Hiresh.Solanki@outlook.com for legacy support/general help!]
 
 ## Make someone a teacher
 
@@ -61,9 +61,9 @@ _Shoutout to Yousuf for the 2024-2025 year for the [orginal Maths Society websit
 
 ## Microsoft Azure
 
-Since we utilise Micrsoft Authentication, we have an Azure Client Secret that expires every 24 months. If logins randomly stop working around july 2028, someone needs to create a new secret and paste it. Instructions as below:
+Since we utilise Micrsoft Authentication, we have an Azure Client Secret that expires every 24 months. If logins randomly stop working in 2028, someone needs to create a new secret and paste it. Ideally in the summer. Instructions as below:
 
-1. Go to [Azure Portal](https://portal.azure.com/#home)
+1. Go to [Azure Portal](https://portal.azure.com/#home) & Sign In
 2. Go to Manage Microsoft Entra ID and click "View"
 3. Then go under Manage on the left side, go to App Registrations.
 4. Under the All Applications tab, select "Maths Society"
@@ -76,7 +76,7 @@ Since we utilise Micrsoft Authentication, we have an Azure Client Secret that ex
 11. Switch to the "Sign in method" and click on Microsoft
 12. Paste in the new Client Secret that was copied on step 7.
 
-You will of course need access to both ucgsmaths@gmail.com and ucgsmaths@outlook.com to do the above.
+You will of course need access to ucgsmaths@gmail.com & the password to do the above.
 
 ## Secrets
 
@@ -86,3 +86,4 @@ If you require .env.local or need to change it, contact me for any Changes @ sol
 
 14/07/2026 | Hiresh Solanki | Website Creation, Revamped README and created TODO.md
 20/07/2026 | Hiresh Solanki | Firebase Auth, Firestore + Microsoft Azure Auth Integration using ucgsmaths@gmail.com & ucgsmaths@hotmail.com. Challenge & Newsletter changed. ENV files created. Contact me for .env.local. Dev & Prod environments for backend created.
+29/09/2026 | Hiresh Solanki | Forgot @outlook email 💀. Recreated Microsoft Azure Auth Integration - but now only using ucgsmaths@gmail.com (with ucgsmaths.ms@outlook.com as an alias email).
